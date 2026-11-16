@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 10, 2026 at 02:53 PM
+-- Generation Time: Nov 16, 2026 at 11:41 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -29,9 +29,9 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `availability` (
   `availabilityID` int NOT NULL,
-  `tutorID` int DEFAULT NULL,
   `availabilityDate` date DEFAULT NULL,
-  `availabilityTime` time DEFAULT NULL
+  `availabilityTime` time DEFAULT NULL,
+  `tutorUserID` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -68,26 +68,11 @@ CREATE TABLE `review` (
 
 CREATE TABLE `session` (
   `sessionID` int NOT NULL,
-  `studentID` int DEFAULT NULL,
-  `tutorID` int DEFAULT NULL,
   `subjectID` int DEFAULT NULL,
   `sessionDate` date DEFAULT NULL,
-  `sessionTime` time DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student`
---
-
-CREATE TABLE `student` (
-  `studentID` int DEFAULT NULL,
-  `password` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `contactNo` int NOT NULL,
-  `email` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `eduLevel` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL
+  `sessionTime` time DEFAULT NULL,
+  `studentUserID` int DEFAULT NULL,
+  `tutorUserID` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -104,13 +89,18 @@ CREATE TABLE `subject` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tutor`
+-- Table structure for table `user`
 --
 
-CREATE TABLE `tutor` (
-  `tutorID` int NOT NULL,
-  `studentID` int NOT NULL,
-  `avgRate` double(10,2) DEFAULT NULL
+CREATE TABLE `user` (
+  `userID` int NOT NULL,
+  `role` enum('student','tutor','admin') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contactNo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `eduLevel` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avgRate` decimal(3,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -122,7 +112,7 @@ CREATE TABLE `tutor` (
 --
 ALTER TABLE `availability`
   ADD PRIMARY KEY (`availabilityID`),
-  ADD KEY `fk_avail_tutor` (`tutorID`);
+  ADD KEY `fk_avail_tutor_user` (`tutorUserID`);
 
 --
 -- Indexes for table `payment`
@@ -143,16 +133,9 @@ ALTER TABLE `review`
 --
 ALTER TABLE `session`
   ADD PRIMARY KEY (`sessionID`),
-  ADD KEY `fk_session_student` (`studentID`),
-  ADD KEY `fk_session_tutor` (`tutorID`),
-  ADD KEY `fk_session_subject` (`subjectID`);
-
---
--- Indexes for table `student`
---
-ALTER TABLE `student`
-  ADD UNIQUE KEY `idx_studentID` (`studentID`),
-  ADD KEY `studentID` (`studentID`);
+  ADD KEY `fk_session_subject` (`subjectID`),
+  ADD KEY `fk_session_student_user` (`studentUserID`),
+  ADD KEY `fk_session_tutor_user` (`tutorUserID`);
 
 --
 -- Indexes for table `subject`
@@ -161,11 +144,21 @@ ALTER TABLE `subject`
   ADD PRIMARY KEY (`subjectID`);
 
 --
--- Indexes for table `tutor`
+-- Indexes for table `user`
 --
-ALTER TABLE `tutor`
-  ADD PRIMARY KEY (`tutorID`),
-  ADD KEY `fk_student` (`studentID`);
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`userID`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `userID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -175,7 +168,7 @@ ALTER TABLE `tutor`
 -- Constraints for table `availability`
 --
 ALTER TABLE `availability`
-  ADD CONSTRAINT `fk_avail_tutor` FOREIGN KEY (`tutorID`) REFERENCES `tutor` (`tutorID`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_avail_tutor_user` FOREIGN KEY (`tutorUserID`) REFERENCES `user` (`userID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `payment`
@@ -193,15 +186,9 @@ ALTER TABLE `review`
 -- Constraints for table `session`
 --
 ALTER TABLE `session`
-  ADD CONSTRAINT `fk_session_student` FOREIGN KEY (`studentID`) REFERENCES `student` (`studentID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_session_student_user` FOREIGN KEY (`studentUserID`) REFERENCES `user` (`userID`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_session_subject` FOREIGN KEY (`subjectID`) REFERENCES `subject` (`subjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_session_tutor` FOREIGN KEY (`tutorID`) REFERENCES `tutor` (`tutorID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `tutor`
---
-ALTER TABLE `tutor`
-  ADD CONSTRAINT `fk_student` FOREIGN KEY (`studentID`) REFERENCES `student` (`studentID`);
+  ADD CONSTRAINT `fk_session_tutor_user` FOREIGN KEY (`tutorUserID`) REFERENCES `user` (`userID`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
