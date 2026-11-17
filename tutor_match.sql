@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 16, 2026 at 11:41 AM
+-- Generation Time: Nov 17, 2026 at 04:36 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -68,22 +68,11 @@ CREATE TABLE `review` (
 
 CREATE TABLE `session` (
   `sessionID` int NOT NULL,
-  `subjectID` int DEFAULT NULL,
   `sessionDate` date DEFAULT NULL,
   `sessionTime` time DEFAULT NULL,
   `studentUserID` int DEFAULT NULL,
-  `tutorUserID` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `subject`
---
-
-CREATE TABLE `subject` (
-  `subjectID` int NOT NULL,
-  `subjectName` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL
+  `tutorUserID` int DEFAULT NULL,
+  `subjectName` text COLLATE utf8mb4_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -133,15 +122,8 @@ ALTER TABLE `review`
 --
 ALTER TABLE `session`
   ADD PRIMARY KEY (`sessionID`),
-  ADD KEY `fk_session_subject` (`subjectID`),
   ADD KEY `fk_session_student_user` (`studentUserID`),
   ADD KEY `fk_session_tutor_user` (`tutorUserID`);
-
---
--- Indexes for table `subject`
---
-ALTER TABLE `subject`
-  ADD PRIMARY KEY (`subjectID`);
 
 --
 -- Indexes for table `user`
@@ -187,7 +169,6 @@ ALTER TABLE `review`
 --
 ALTER TABLE `session`
   ADD CONSTRAINT `fk_session_student_user` FOREIGN KEY (`studentUserID`) REFERENCES `user` (`userID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_session_subject` FOREIGN KEY (`subjectID`) REFERENCES `subject` (`subjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_session_tutor_user` FOREIGN KEY (`tutorUserID`) REFERENCES `user` (`userID`) ON DELETE CASCADE;
 COMMIT;
 
